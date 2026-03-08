@@ -57,7 +57,15 @@ export default async function Home() {
       <div className="w-full max-w-2xl px-8 pt-48 pb-12">
         <HomeHero
           logo={
-            <Image src="/stoat.webp" alt="stoat.run" width={120} height={120} draggable={false} quality={100} sizes="120px" />
+            <Image
+              src="/stoat.webp"
+              alt="stoat.run"
+              width={120}
+              height={120}
+              draggable={false}
+              quality={100}
+              sizes="120px"
+            />
           }
           highlighted={highlighted}
           overlayHighlighted={overlayHighlighted}
