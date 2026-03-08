@@ -2,11 +2,40 @@
   "name": "@stoat-run/overlay",
   "version": "0.1.0",
   "private": false,
+  "license": "MIT",
+  "author": "sic-em",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/sic-em/stoat.run.git",
+    "directory": "packages/overlay"
+  },
+  "homepage": "https://github.com/sic-em/stoat.run/tree/main/packages/overlay",
+  "bugs": {
+    "url": "https://github.com/sic-em/stoat.run/issues"
+  },
   "type": "module",
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
   "exports": {
-    ".": "./dist/StoatOverlay.js",
-    "./middleware": "./dist/middleware.js",
-    "./meta": "./dist/meta.js"
+    ".": {
+      "types": "./dist/StoatOverlay.d.ts",
+      "import": "./dist/StoatOverlay.js"
+    },
+    "./middleware": {
+      "types": "./dist/middleware.d.cts",
+      "require": "./dist/middleware.cjs",
+      "default": "./dist/middleware.cjs"
+    },
+    "./meta": {
+      "types": "./dist/meta.d.cts",
+      "require": "./dist/meta.cjs",
+      "default": "./dist/meta.cjs"
+    }
   },
   "scripts": {
     "build": "tsup",
@@ -19,8 +48,12 @@
     "express": ">=4"
   },
   "peerDependenciesMeta": {
-    "react": { "optional": true },
-    "express": { "optional": true }
+    "react": {
+      "optional": true
+    },
+    "express": {
+      "optional": true
+    }
   },
   "devDependencies": {
     "@types/node": "^20.0.0",

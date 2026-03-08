@@ -10,6 +10,13 @@ export default defineConfig([
     outDir: "dist",
     minify: true,
     platform: "browser",
+    esbuildOptions(options) {
+      options.loader = {
+        ...(options.loader ?? {}),
+        ".css": "text",
+        ".webp": "dataurl",
+      };
+    },
   },
   // ESM for React component
   {

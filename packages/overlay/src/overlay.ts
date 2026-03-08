@@ -241,6 +241,15 @@ import logoDataUrl from "./assets/logo.webp";
   align-items: center;
   gap: 6px;
 }
+.stoat-btn.close { color: #b91c1c; }
+.stoat-btn.close:hover {
+  background:
+    linear-gradient(
+      180deg,
+      rgba(255, 255, 255, 1) 0%,
+      color-mix(in oklab, var(--stoat-destructive) 8%, white) 100%
+    );
+}
 .stoat-copy-icons {
   position: relative;
   width: 14px;
@@ -271,15 +280,6 @@ import logoDataUrl from "./assets/logo.webp";
 .stoat-btn.copy.copied .stoat-copy-icon-check {
   opacity: 1;
   transform: scale(1) rotate(0deg);
-}
-.stoat-btn.close { color: #b91c1c; }
-.stoat-btn.close:hover {
-  background:
-    linear-gradient(
-      180deg,
-      rgba(255, 255, 255, 1) 0%,
-      color-mix(in oklab, var(--stoat-destructive) 8%, white) 100%
-    );
 }
 .stoat-btn.icon {
   width: 30px;
@@ -337,32 +337,6 @@ import logoDataUrl from "./assets/logo.webp";
   height: 24px;
   border-radius: 8px;
 }
-.stoat-wrap.closing .stoat-bar {
-  width: 28px;
-  padding: 4px;
-  gap: 0;
-  border-radius: 999px;
-  overflow: hidden;
-  transform: scale(0.94);
-  transition:
-    transform 280ms cubic-bezier(0.32, 0.72, 0, 1),
-    opacity 220ms cubic-bezier(0.2, 0.8, 0.2, 1),
-    width 280ms cubic-bezier(0.32, 0.72, 0, 1),
-    padding 280ms cubic-bezier(0.32, 0.72, 0, 1),
-    border-radius 280ms cubic-bezier(0.32, 0.72, 0, 1);
-}
-.stoat-wrap.closing .stoat-bar > * {
-  opacity: 0;
-  width: 0;
-  margin: 0;
-  padding-left: 0;
-  padding-right: 0;
-  border-width: 0;
-  pointer-events: none;
-  transition:
-    opacity 180ms cubic-bezier(0.2, 0.8, 0.2, 1),
-    width 260ms cubic-bezier(0.32, 0.72, 0, 1);
-}
 .stoat-feedback {
   position: fixed;
   z-index: 2147483647;
@@ -389,7 +363,6 @@ import logoDataUrl from "./assets/logo.webp";
   styleEl.textContent = INLINE_STYLES;
 
   let state = loadState();
-  // Always start each overlay session at bottom-center.
   state.edge = "bottom";
   state.ratio = 0.5;
   let isDragging = false;
@@ -397,7 +370,6 @@ import logoDataUrl from "./assets/logo.webp";
   let copyResetTimer: number | undefined;
   const EDGE_MARGIN = 18;
   const DRAG_MARGIN = 10;
-  const CLOSE_MORPH_MS = 280;
 
   const clamp = (v: number, min: number, max: number): number =>
     Math.max(min, Math.min(v, max));
@@ -531,12 +503,8 @@ import logoDataUrl from "./assets/logo.webp";
   });
 
   closeBtn.addEventListener("click", async () => {
-    const token = scriptTag.getAttribute("data-token") ?? "";
-    wrap.classList.add("closing");
-    await new Promise<void>((resolve) => {
-      window.setTimeout(resolve, CLOSE_MORPH_MS);
-    });
     try {
+      const token = scriptTag.getAttribute("data-token") ?? "";
       const params = new URLSearchParams({ slug });
       if (token) params.set("token", token);
       const res = await fetch(`/.stoat/close?${params.toString()}`, {
@@ -548,11 +516,9 @@ import logoDataUrl from "./assets/logo.webp";
           host.remove();
         }, 120);
       } else {
-        wrap.classList.remove("closing");
         showFeedback("Close failed");
       }
     } catch {
-      wrap.classList.remove("closing");
       showFeedback("Close failed");
     }
   });
