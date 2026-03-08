@@ -119,7 +119,7 @@ export async function httpCommand(
       tunnel.sendGoAway("user_quit");
       tunnel.stop();
       clearSession();
-      interactive.stop();
+      interactive?.stop();
       process.exit(0);
     },
   });
@@ -129,7 +129,7 @@ export async function httpCommand(
     tunnel.sendGoAway("user_quit");
     tunnel.stop();
     clearSession();
-    interactive.stop();
+    interactive?.stop();
     process.exit(0);
   });
 
