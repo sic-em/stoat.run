@@ -54,7 +54,7 @@ export default async function Home() {
 
   return (
     <main className="flex min-h-screen flex-col items-center">
-      <div className="w-full max-w-2xl px-8 pt-48 pb-12">
+      <div className="w-full max-w-2xl px-8 py-12">
         <HomeHero
           logo={
             <Image

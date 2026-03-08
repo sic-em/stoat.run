@@ -56,7 +56,7 @@ export default function RootLayout({
       <body>
         <ThemeProvider>
           <div className="mx-auto w-full max-w-7xl">
-            <header className="fixed top-0 right-0 left-0 z-50">
+            <header className="absolute top-0 right-0 left-0 z-50">
               <div className="mx-auto flex max-w-7xl items-center justify-end px-8 py-4">
                 <a
                   href="https://github.com/sic-em/stoat.run"
