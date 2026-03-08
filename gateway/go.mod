@@ -1,4 +1,4 @@
-module github.com/sic-em/ferret/gateway
+module github.com/sic-em/stoat.run/gateway
 
 go 1.22
 

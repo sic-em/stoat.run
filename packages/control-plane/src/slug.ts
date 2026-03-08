@@ -22,7 +22,7 @@ const NOUNS = [
   "stone", "stream", "stripe", "tail", "thicket", "thread", "tunnel", "turn",
   "vault", "veil", "whisker", "wisp", "warren", "way", "wink", "wood",
   "yard", "yarn", "yip", "zephyr", "zip", "zone", "track", "trail",
-  "twitch", "snout", "sniff", "scramble", "ferret", "marten", "stoat", "weasel",
+  "twitch", "snout", "sniff", "scramble", "marten", "stoat", "weasel", "otter",
 ];
 function buildSlug(num: number): Slug {
   const adj = ADJECTIVES[Math.floor(Math.random() * ADJECTIVES.length)];

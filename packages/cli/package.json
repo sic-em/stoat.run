@@ -1,12 +1,37 @@
 {
-  "name": "ferret",
+  "name": "stoat.run",
   "version": "0.1.0",
   "description": "Share your localhost in one command",
-  "bin": {
-    "ferret": "./dist/bin.cjs"
+  "license": "MIT",
+  "author": "sic-em",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/sic-em/stoat.run.git",
+    "directory": "packages/cli"
   },
-  "exports": {
-    ".": "./dist/FerretOverlay.js"
+  "homepage": "https://github.com/sic-em/stoat.run/tree/main/packages/cli",
+  "bugs": {
+    "url": "https://github.com/sic-em/stoat.run/issues"
+  },
+  "keywords": [
+    "tunnel",
+    "localhost",
+    "cli",
+    "proxy",
+    "websocket"
+  ],
+  "bin": {
+    "stoat": "./dist/bin.cjs"
+  },
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "engines": {
+    "node": ">=20"
   },
   "type": "module",
   "scripts": {

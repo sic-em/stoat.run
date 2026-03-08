@@ -28,14 +28,14 @@ func TestHandleViewerCountAndStatus(t *testing.T) {
 	h := NewGatewayHandler(Config{BaseDomain: "localhost"}, &SessionRegistry{})
 	h.registry.Set("alpha", &TunnelConn{Slug: "alpha", ExpiresAt: "2026-12-31T00:00:00Z"})
 
-	viewerReq := httptest.NewRequest(http.MethodGet, "/.ferret/viewers?slug=alpha", nil)
+	viewerReq := httptest.NewRequest(http.MethodGet, "/.stoat/viewers?slug=alpha", nil)
 	viewerResp := httptest.NewRecorder()
 	h.ServeHTTP(viewerResp, viewerReq)
 	if viewerResp.Code != http.StatusOK {
 		t.Fatalf("viewer status code = %d", viewerResp.Code)
 	}
 
-	statusReq := httptest.NewRequest(http.MethodGet, "/.ferret/status?slug=alpha", nil)
+	statusReq := httptest.NewRequest(http.MethodGet, "/.stoat/status?slug=alpha", nil)
 	statusResp := httptest.NewRecorder()
 	h.ServeHTTP(statusResp, statusReq)
 	if statusResp.Code != http.StatusOK {

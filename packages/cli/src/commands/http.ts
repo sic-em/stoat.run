@@ -4,8 +4,8 @@ import { printBanner, printError } from "../display.js";
 import { InteractiveMode } from "../interactive.js";
 
 const CONTROL_PLANE_URL =
-  process.env["FERRET_CONTROL_PLANE_URL"] ??
-  "https://ferret-control-plane.onrender.com";
+  process.env["STOAT_CONTROL_PLANE_URL"] ??
+  "https://cp.discova.us";
 
 interface HttpOptions {
   slug?: string;

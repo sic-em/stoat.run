@@ -1,6 +1,6 @@
 import type { RequestHandler } from "express";
 
-export function ferretOverlay(slug: string): RequestHandler {
+export function stoatOverlay(slug: string): RequestHandler {
   return (_req, res, next) => {
     const originalEnd = res.end.bind(res) as (...args: unknown[]) => unknown;
 
@@ -17,7 +17,7 @@ export function ferretOverlay(slug: string): RequestHandler {
         chunk
       ) {
         const html = String(chunk);
-        const tag = `<script defer src="/.ferret/overlay.js?slug=${encodeURIComponent(slug)}"></script>`;
+        const tag = `<script defer src="/.stoat/overlay.js?slug=${encodeURIComponent(slug)}"></script>`;
         const injected = html.replace("</head>", `${tag}</head>`);
         res.setHeader("content-length", Buffer.byteLength(injected));
         return originalEnd(injected, encoding, cb);

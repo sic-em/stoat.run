@@ -1,12 +1,12 @@
-export function ferretMetaTag(slug: string): string {
-  return `<script defer src="/.ferret/overlay.js?slug=${encodeURIComponent(slug)}"></script>`;
+export function stoatMetaTag(slug: string): string {
+  return `<script defer src="/.stoat/overlay.js?slug=${encodeURIComponent(slug)}"></script>`;
 }
 
-export function ferretVitePlugin(slug: string) {
+export function stoatVitePlugin(slug: string) {
   return {
-    name: "ferret-overlay",
+    name: "stoat-overlay",
     transformIndexHtml(html: string): string {
-      const tag = `<script defer src="/.ferret/overlay.js?slug=${encodeURIComponent(slug)}"></script>`;
+      const tag = `<script defer src="/.stoat/overlay.js?slug=${encodeURIComponent(slug)}"></script>`;
       return html.replace("</head>", `${tag}</head>`);
     },
   };

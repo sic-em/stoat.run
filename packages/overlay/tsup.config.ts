@@ -5,7 +5,7 @@ export default defineConfig([
   {
     entry: { overlay: "src/overlay.ts" },
     format: ["iife"],
-    globalName: "FerretOverlayBundle",
+    globalName: "StoatOverlayBundle",
     target: "es2020",
     outDir: "dist",
     minify: true,
@@ -13,7 +13,7 @@ export default defineConfig([
   },
   // ESM for React component
   {
-    entry: { FerretOverlay: "src/FerretOverlay.tsx" },
+    entry: { StoatOverlay: "src/StoatOverlay.tsx" },
     format: ["esm"],
     target: "es2020",
     outDir: "dist",

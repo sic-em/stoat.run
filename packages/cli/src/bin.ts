@@ -5,7 +5,7 @@ import { statusCommand } from "./commands/status.js";
 const program = new Command();
 
 program
-  .name("ferret")
+  .name("stoat")
   .description("Share your localhost in one command")
   .version("0.1.0");
 

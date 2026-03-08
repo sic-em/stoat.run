@@ -1,16 +1,16 @@
 "use client";
 import { useEffect } from "react";
 
-interface FerretOverlayProps {
+interface StoatOverlayProps {
   slug: string;
 }
 
-export function FerretOverlay({ slug }: FerretOverlayProps): null {
+export function StoatOverlay({ slug }: StoatOverlayProps): null {
   useEffect(() => {
     if (typeof window === "undefined") return;
 
     const script = document.createElement("script");
-    script.src = `/.ferret/overlay.js?slug=${encodeURIComponent(slug)}`;
+    script.src = `/.stoat/overlay.js?slug=${encodeURIComponent(slug)}`;
     script.defer = true;
     document.head.appendChild(script);
 

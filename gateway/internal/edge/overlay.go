@@ -10,16 +10,16 @@ import (
 
 func (h *GatewayHandler) HandleOverlayRoutes(w http.ResponseWriter, r *http.Request) bool {
 	switch r.URL.Path {
-	case "/.ferret/overlay.js":
+	case "/.stoat/overlay.js":
 		h.serveOverlayScript(w, r)
 		return true
-	case "/.ferret/viewers":
+	case "/.stoat/viewers":
 		h.handleViewerCount(w, r)
 		return true
-	case "/.ferret/status":
+	case "/.stoat/status":
 		h.handleOverlayStatus(w, r)
 		return true
-	case "/.ferret/close":
+	case "/.stoat/close":
 		h.handleOverlayClose(w, r)
 		return true
 	default:

@@ -9,14 +9,14 @@ GW_PORT="${GW_PORT:-8080}"
 APP_PORT="${APP_PORT:-3000}"
 GW_RPS="${GW_RPS:-1}"
 
-LOG_DIR="${LOG_DIR:-/tmp/ferret-e2e}"
+LOG_DIR="${LOG_DIR:-/tmp/stoat-e2e}"
 mkdir -p "$LOG_DIR"
 
 CP_LOG="$LOG_DIR/control-plane.log"
 GW_LOG="$LOG_DIR/gateway.log"
 APP_LOG="$LOG_DIR/app.log"
 CLI_LOG="$LOG_DIR/cli.log"
-SESSION_FILE="$HOME/.ferret/p.json"
+SESSION_FILE="$HOME/.stoat/p.json"
 
 cleanup() {
   set +e
@@ -78,7 +78,7 @@ start_cli() {
   rm -f "$SESSION_FILE"
   : > "$CLI_LOG"
 
-  FERRET_CONTROL_PLANE_URL="http://127.0.0.1:${CP_PORT}" \
+  STOAT_CONTROL_PLANE_URL="http://127.0.0.1:${CP_PORT}" \
   node packages/cli/dist/bin.cjs http "$APP_PORT" "$@" >"$CLI_LOG" 2>&1 &
   CLI_PID=$!
 
@@ -110,7 +110,7 @@ wait_tunnel_active() {
   local status_json=""
 
   for _ in $(seq 1 120); do
-    status_json="$(curl -fsS "http://127.0.0.1:${GW_PORT}/.ferret/status?slug=${slug}" || true)"
+    status_json="$(curl -fsS "http://127.0.0.1:${GW_PORT}/.stoat/status?slug=${slug}" || true)"
     if [[ "$status_json" == *'"active":true'* ]]; then
       return 0
     fi
@@ -126,9 +126,9 @@ wait_tunnel_active() {
 }
 
 echo "[e2e] Building required packages..."
-pnpm -s --filter @ferret/control-plane build >/dev/null
-pnpm -s --filter @ferret/overlay build >/dev/null
-pnpm -s --filter ferret build >/dev/null
+pnpm -s --filter @stoat-run/control-plane build >/dev/null
+pnpm -s --filter @stoat-run/overlay build >/dev/null
+pnpm -s --filter stoat.run build >/dev/null
 
 CP_PORT="$(next_free_port "$CP_PORT")"
 GW_PORT="$(next_free_port "$GW_PORT")"
@@ -137,8 +137,8 @@ echo "[e2e] Using ports: control-plane=$CP_PORT gateway=$GW_PORT app=$APP_PORT"
 
 echo "[e2e] Starting control-plane on :$CP_PORT"
 PORT="$CP_PORT" \
-FERRET_EDGE_BASE="ws://localhost:${GW_PORT}" \
-FERRET_PUBLIC_BASE="http://{slug}.localhost:${GW_PORT}" \
+STOAT_EDGE_BASE="ws://localhost:${GW_PORT}" \
+STOAT_PUBLIC_BASE="http://{slug}.localhost:${GW_PORT}" \
 node packages/control-plane/dist/server.js >"$CP_LOG" 2>&1 &
 CP_PID=$!
 wait_http "http://127.0.0.1:${CP_PORT}/healthz"
@@ -170,7 +170,7 @@ const server = http.createServer((req, res) => {
       method: req.method,
       path: req.url,
       body,
-      marker: "ferret-e2e"
+      marker: "stoat-e2e"
     });
     res.setHeader("content-type", "application/json");
     res.end(payload);
@@ -194,21 +194,21 @@ echo "[e2e] Tunnel slug: $SLUG"
 
 GET_BODY="$(curl -fsS -H "Host: ${SLUG}.localhost" "http://127.0.0.1:${GW_PORT}/hello?x=1")"
 POST_BODY="$(curl -fsS -X POST -H "Host: ${SLUG}.localhost" -d "abc123" "http://127.0.0.1:${GW_PORT}/echo")"
-OVERLAY_JS="$(curl -fsS "http://127.0.0.1:${GW_PORT}/.ferret/overlay.js")"
-OVERLAY_STATUS="$(curl -fsS "http://127.0.0.1:${GW_PORT}/.ferret/status?slug=${SLUG}")"
-OVERLAY_VIEWERS="$(curl -fsS "http://127.0.0.1:${GW_PORT}/.ferret/viewers?slug=${SLUG}")"
+OVERLAY_JS="$(curl -fsS "http://127.0.0.1:${GW_PORT}/.stoat/overlay.js")"
+OVERLAY_STATUS="$(curl -fsS "http://127.0.0.1:${GW_PORT}/.stoat/status?slug=${SLUG}")"
+OVERLAY_VIEWERS="$(curl -fsS "http://127.0.0.1:${GW_PORT}/.stoat/viewers?slug=${SLUG}")"
 
-if [[ "$GET_BODY" != *'"marker":"ferret-e2e"'* ]] || [[ "$GET_BODY" != *'"path":"/hello?x=1"'* ]]; then
+if [[ "$GET_BODY" != *'"marker":"stoat-e2e"'* ]] || [[ "$GET_BODY" != *'"path":"/hello?x=1"'* ]]; then
   echo "[e2e] GET did not proxy correctly" >&2
   echo "Response: $GET_BODY" >&2
   exit 1
 fi
-if [[ "$POST_BODY" != *'"marker":"ferret-e2e"'* ]] || [[ "$POST_BODY" != *'"method":"POST"'* ]] || [[ "$POST_BODY" != *'"body":"abc123"'* ]]; then
+if [[ "$POST_BODY" != *'"marker":"stoat-e2e"'* ]] || [[ "$POST_BODY" != *'"method":"POST"'* ]] || [[ "$POST_BODY" != *'"body":"abc123"'* ]]; then
   echo "[e2e] POST did not proxy request body correctly" >&2
   echo "Response: $POST_BODY" >&2
   exit 1
 fi
-if [[ "$OVERLAY_JS" != *'ferret-bar'* ]]; then
+if [[ "$OVERLAY_JS" != *'stoat-bar'* ]]; then
   echo "[e2e] Overlay script not served correctly" >&2
   exit 1
 fi
@@ -228,14 +228,14 @@ start_cli --auth testuser:testpass
 SLUG="$(read_slug)"
 wait_tunnel_active "$SLUG"
 
-AUTH_FAIL_CODE="$(curl -s -o /tmp/ferret-auth-fail.out -w "%{http_code}" -H "Host: ${SLUG}.localhost" "http://127.0.0.1:${GW_PORT}/private")"
+AUTH_FAIL_CODE="$(curl -s -o /tmp/stoat-auth-fail.out -w "%{http_code}" -H "Host: ${SLUG}.localhost" "http://127.0.0.1:${GW_PORT}/private")"
 AUTH_OK_BODY="$(curl -fsS -u testuser:testpass -H "Host: ${SLUG}.localhost" "http://127.0.0.1:${GW_PORT}/private")"
 
 if [[ "$AUTH_FAIL_CODE" != "401" ]]; then
   echo "[e2e] Expected 401 for unauthenticated request, got $AUTH_FAIL_CODE" >&2
   exit 1
 fi
-if [[ "$AUTH_OK_BODY" != *'"marker":"ferret-e2e"'* ]]; then
+if [[ "$AUTH_OK_BODY" != *'"marker":"stoat-e2e"'* ]]; then
   echo "[e2e] Authenticated request did not proxy" >&2
   exit 1
 fi
@@ -246,7 +246,7 @@ SLUG="$(read_slug)"
 wait_tunnel_active "$SLUG"
 sleep 3
 
-EXPIRE_CODE="$(curl -s -o /tmp/ferret-expiry.out -w "%{http_code}" -H "Host: ${SLUG}.localhost" "http://127.0.0.1:${GW_PORT}/expired")"
+EXPIRE_CODE="$(curl -s -o /tmp/stoat-expiry.out -w "%{http_code}" -H "Host: ${SLUG}.localhost" "http://127.0.0.1:${GW_PORT}/expired")"
 if [[ "$EXPIRE_CODE" != "410" && "$EXPIRE_CODE" != "404" ]]; then
   echo "[e2e] Expected 410 (or 404 after close) for expired tunnel, got $EXPIRE_CODE" >&2
   exit 1
@@ -258,12 +258,12 @@ SLUG="$(read_slug)"
 wait_tunnel_active "$SLUG"
 
 RATE_LIMIT_HITS=0
-RATE_CODES_FILE="/tmp/ferret-rate-codes.txt"
+RATE_CODES_FILE="/tmp/stoat-rate-codes.txt"
 rm -f "$RATE_CODES_FILE"
 REQ_PIDS=()
 for _ in $(seq 1 40); do
   (
-    code="$(curl --max-time 3 -s -o /tmp/ferret-rate.out -w "%{http_code}" -H "Host: ${SLUG}.localhost" "http://127.0.0.1:${GW_PORT}/burst" || true)"
+    code="$(curl --max-time 3 -s -o /tmp/stoat-rate.out -w "%{http_code}" -H "Host: ${SLUG}.localhost" "http://127.0.0.1:${GW_PORT}/burst" || true)"
     echo "$code" >> "$RATE_CODES_FILE"
   ) &
   REQ_PIDS+=("$!")

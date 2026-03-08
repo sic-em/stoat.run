@@ -19,10 +19,16 @@ function sanitizeBase(value: string, fallback: string): string {
 export function loadConfig(env: NodeJS.ProcessEnv = process.env): ControlPlaneConfig {
   return {
     port: parsePositiveInt(env.PORT, 4000),
-    edgeBase: sanitizeBase(env.FERRET_EDGE_BASE ?? "wss://t.ferret.run", "wss://t.ferret.run"),
+    edgeBase: sanitizeBase(
+      env.STOAT_EDGE_BASE ?? "wss://edge.discova.us",
+      "wss://edge.discova.us"
+    ),
     publicBase: sanitizeBase(
-      (env.FERRET_PUBLIC_BASE ?? "https://t.ferret.run").replace(/\s+/g, ""),
-      "https://t.ferret.run"
+      (env.STOAT_PUBLIC_BASE ?? "https://{slug}.discova.us").replace(
+        /\s+/g,
+        ""
+      ),
+      "https://{slug}.discova.us"
     ),
     defaultExpirySecs: parsePositiveInt(env.DEFAULT_EXPIRY_SECS, 86400),
   };

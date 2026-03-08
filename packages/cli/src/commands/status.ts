@@ -1,8 +1,8 @@
 import { loadSession } from "../session.js";
 
 const CONTROL_PLANE_URL =
-  process.env["FERRET_CONTROL_PLANE_URL"] ??
-  "https://ferret-control-plane.onrender.com";
+  process.env["STOAT_CONTROL_PLANE_URL"] ??
+  "https://cp.discova.us";
 
 interface SessionStatusResponse {
   slug: string;
@@ -57,7 +57,7 @@ export async function statusCommand(): Promise<void> {
   const overallStatus =
     localProcessAlive && controlPlaneActive && !expired ? "online" : "offline";
 
-  process.stdout.write("Ferret Tunnel Status\n");
+  process.stdout.write("Stoat.run Tunnel Status\n");
   process.stdout.write("====================\n");
   process.stdout.write(`Slug:             ${session.slug}\n`);
   process.stdout.write(`Public URL:       ${session.publicUrl}\n`);

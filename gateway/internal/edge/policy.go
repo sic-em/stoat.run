@@ -53,7 +53,7 @@ func (p Policy) CheckBasicAuth(w http.ResponseWriter, r *http.Request, tunnel *T
 
 	user, pass, ok := r.BasicAuth()
 	if !ok || user != tunnel.BasicAuth.User || pass != tunnel.BasicAuth.Pass {
-		w.Header().Set("WWW-Authenticate", `Basic realm="Ferret Tunnel"`)
+		w.Header().Set("WWW-Authenticate", `Basic realm="Stoat.run Tunnel"`)
 		http.Error(w, "authentication required", http.StatusUnauthorized)
 		return true
 	}

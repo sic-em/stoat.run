@@ -26,7 +26,7 @@ export function printBanner(
   const expiresStr =
     diffHours > 0 ? `in ${diffHours} hours` : `in ${diffMins} minutes`;
 
-  process.stdout.write("\n  🐾 Ferret v0.1.0\n\n");
+  process.stdout.write("\n  🐾 Stoat.run v0.1.0\n\n");
   info(`➜ Public URL: ${publicUrl}`);
   info(`➜ Local: http://localhost:${localPort}`);
   info(`➜ Slug: ${slug}`);

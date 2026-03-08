@@ -11,7 +11,7 @@ import (
 
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
-	"github.com/sic-em/ferret/gateway/internal/edge"
+	"github.com/sic-em/stoat.run/gateway/internal/edge"
 )
 
 func main() {

@@ -1,5 +1,5 @@
 {
-  "name": "@ferret/control-plane",
+  "name": "@stoat-run/control-plane",
   "version": "0.1.0",
   "private": true,
   "type": "module",

@@ -3,11 +3,11 @@ import { join } from "path";
 import { homedir } from "os";
 import type { PersistedSession } from "./types.js";
 
-const FERRET_DIR = join(homedir(), ".ferret");
-const STATE_FILE = join(FERRET_DIR, "p.json");
+const STOAT_DIR = join(homedir(), ".stoat");
+const STATE_FILE = join(STOAT_DIR, "p.json");
 
 export function saveSession(session: PersistedSession): void {
-  mkdirSync(FERRET_DIR, { recursive: true });
+  mkdirSync(STOAT_DIR, { recursive: true });
   writeFileSync(STATE_FILE, JSON.stringify(session, null, 2));
 }
 

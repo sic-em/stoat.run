@@ -15,19 +15,19 @@ const fontMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Ferret — Share localhost in one command",
+  title: "Stoat.run — Share localhost in one command",
   description:
-    "Expose your local dev server to the internet instantly. No signup, no config — just ferret http 3000.",
+    "Expose your local dev server to the internet instantly. No signup, no config — just stoat http 3000.",
   openGraph: {
-    title: "Ferret — Share localhost in one command",
+    title: "Stoat.run — Share localhost in one command",
     description:
       "Expose your local dev server to the internet instantly. No signup, no config.",
     type: "website",
-    siteName: "Ferret",
+    siteName: "Stoat.run",
   },
   twitter: {
     card: "summary_large_image",
-    title: "Ferret — Share localhost in one command",
+    title: "Stoat.run — Share localhost in one command",
     description: "Expose your local dev server instantly with one command.",
   },
 };
