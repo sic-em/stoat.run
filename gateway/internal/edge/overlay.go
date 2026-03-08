@@ -1,15 +1,12 @@
 package edge
 
 import (
-	"context"
 	"encoding/json"
 	"errors"
-	"fmt"
 	"net/http"
 	"os"
 	"path/filepath"
 	"strings"
-	"time"
 )
 
 func (h *GatewayHandler) HandleOverlayRoutes(w http.ResponseWriter, r *http.Request) bool {
@@ -27,9 +24,6 @@ func (h *GatewayHandler) HandleOverlayRoutes(w http.ResponseWriter, r *http.Requ
 		return true
 	case "/.stoat/status":
 		h.handleOverlayStatus(w, r)
-		return true
-	case "/.stoat/logs":
-		h.handleOverlayLogs(w, r)
 		return true
 	case "/.stoat/close":
 		h.handleOverlayClose(w, r)
@@ -136,7 +130,6 @@ func (h *GatewayHandler) handleOverlayClose(w http.ResponseWriter, r *http.Reque
 		h.writeJSON(w, http.StatusNotFound, map[string]string{"error": "session_not_found"})
 		return
 	}
-	tunnel.AddLog("Close requested from overlay")
 	if token == "" {
 		token = tunnel.Token
 	}
@@ -147,12 +140,10 @@ func (h *GatewayHandler) handleOverlayClose(w http.ResponseWriter, r *http.Reque
 
 	sessionInfo, err := h.validator.ValidateSession(r.Context(), slug, token)
 	if err != nil {
-		tunnel.AddLog("Close failed: control plane unavailable")
 		h.writeJSON(w, http.StatusBadGateway, map[string]string{"error": "control_plane_unavailable"})
 		return
 	}
 	if !sessionInfo.Valid {
-		tunnel.AddLog("Close failed: invalid token")
 		h.writeJSON(w, http.StatusForbidden, map[string]string{"error": "invalid_token"})
 		return
 	}
@@ -166,99 +157,6 @@ func (h *GatewayHandler) handleOverlayClose(w http.ResponseWriter, r *http.Reque
 	})
 	tunnel.Close()
 	h.registry.Delete(slug)
-	tunnel.AddLog("Tunnel closed from overlay")
 
 	h.writeJSON(w, http.StatusOK, map[string]bool{"ok": true})
-}
-
-func (h *GatewayHandler) handleOverlayLogs(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodGet {
-		h.writeJSON(w, http.StatusMethodNotAllowed, map[string]string{"error": "method_not_allowed"})
-		return
-	}
-
-	slug := r.URL.Query().Get("slug")
-	if slug == "" {
-		h.writeJSON(w, http.StatusBadRequest, map[string]string{"error": "slug_required"})
-		return
-	}
-
-	tunnel, ok := h.registry.Get(slug)
-	if !ok {
-		h.writeJSON(w, http.StatusNotFound, map[string]string{"error": "session_not_found"})
-		return
-	}
-
-	flusher, ok := w.(http.Flusher)
-	if !ok {
-		h.writeJSON(w, http.StatusInternalServerError, map[string]string{"error": "streaming_not_supported"})
-		return
-	}
-
-	w.Header().Set("Content-Type", "text/event-stream")
-	w.Header().Set("Cache-Control", "no-cache, no-store, must-revalidate")
-	w.Header().Set("Connection", "keep-alive")
-	w.Header().Set("X-Accel-Buffering", "no")
-
-	ctx := r.Context()
-	ch, history := tunnel.SubscribeLogs(ctx)
-
-	writeEntry := func(entry LogEntry) error {
-		raw, err := json.Marshal(map[string]any{
-			"seq":     entry.Seq,
-			"time":    entry.Time.Format(time.RFC3339),
-			"message": entry.Message,
-		})
-		if err != nil {
-			return err
-		}
-		if _, err := fmt.Fprintf(w, "event: log\ndata: %s\n\n", raw); err != nil {
-			return err
-		}
-		flusher.Flush()
-		return nil
-	}
-
-	for _, entry := range history {
-		if err := writeEntry(entry); err != nil {
-			return
-		}
-	}
-
-	heartbeat := time.NewTicker(20 * time.Second)
-	defer heartbeat.Stop()
-
-	for {
-		select {
-		case <-ctx.Done():
-			return
-		case <-tunnel.Done():
-			_ = writeSSELine(ctx, w, flusher, "event: end\ndata: {\"message\":\"tunnel_closed\"}\n\n")
-			return
-		case entry, ok := <-ch:
-			if !ok {
-				return
-			}
-			if err := writeEntry(entry); err != nil {
-				return
-			}
-		case <-heartbeat.C:
-			if err := writeSSELine(ctx, w, flusher, ": keepalive\n\n"); err != nil {
-				return
-			}
-		}
-	}
-}
-
-func writeSSELine(ctx context.Context, w http.ResponseWriter, flusher http.Flusher, payload string) error {
-	select {
-	case <-ctx.Done():
-		return ctx.Err()
-	default:
-	}
-	if _, err := w.Write([]byte(payload)); err != nil {
-		return err
-	}
-	flusher.Flush()
-	return nil
 }

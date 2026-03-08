@@ -85,7 +85,6 @@ func (h *GatewayHandler) HandleTunnelUpgrade(w http.ResponseWriter, r *http.Requ
 		WSConn:    conn,
 		streams:   make(map[uint16]*Stream),
 		viewerLastSeen: make(map[string]time.Time),
-		logRingCapacity: defaultLogRingCapacity,
 		nextID:    2,
 		limiter:   limiter,
 		ctx:       tunnelCtx,
@@ -93,7 +92,6 @@ func (h *GatewayHandler) HandleTunnelUpgrade(w http.ResponseWriter, r *http.Requ
 		closed:    make(chan struct{}),
 	}
 	tunnel.lastPongUnix.Store(time.Now().Unix())
-	tunnel.AddLog("Tunnel connected")
 	h.registry.Set(auth.Slug, tunnel)
 
 	publicURL := fmt.Sprintf("https://%s.%s", auth.Slug, h.cfg.BaseDomain)
@@ -121,7 +119,6 @@ func (h *GatewayHandler) HandleTunnelUpgrade(w http.ResponseWriter, r *http.Requ
 
 func (h *GatewayHandler) readTunnelLoop(tunnel *TunnelConn) {
 	defer func() {
-		tunnel.AddLog("Tunnel disconnected")
 		h.registry.Delete(tunnel.Slug)
 		tunnel.Close()
 	}()

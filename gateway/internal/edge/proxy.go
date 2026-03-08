@@ -3,7 +3,6 @@ package edge
 import (
 	"encoding/json"
 	"errors"
-	"fmt"
 	"io"
 	"net/http"
 	"strconv"
@@ -36,7 +35,6 @@ func (h *GatewayHandler) ProxyRequest(tunnel *TunnelConn, w http.ResponseWriter,
 	}
 
 	tunnel.TouchViewer(clientIPFromRequest(r), r.Header.Get("User-Agent"))
-	tunnel.AddLog(fmt.Sprintf("%s %s", r.Method, r.URL.RequestURI()))
 
 	stream, err := tunnel.AllocStream()
 	if err != nil {
@@ -63,19 +61,16 @@ func (h *GatewayHandler) ProxyRequest(tunnel *TunnelConn, w http.ResponseWriter,
 		StreamID: stream.ID,
 		Payload:  metaRaw,
 	}); err != nil {
-		tunnel.AddLog("Failed to open request stream")
 		http.Error(w, "failed to open stream", http.StatusBadGateway)
 		return
 	}
 
 	if err := h.forwardRequestBody(tunnel, stream.ID, r.Body); err != nil {
-		tunnel.AddLog("Failed to forward request body")
 		http.Error(w, "failed to send request body", http.StatusBadGateway)
 		return
 	}
 
 	if err := h.pipeResponseStream(stream, w); err != nil {
-		tunnel.AddLog(fmt.Sprintf("Request failed: %s", err.Error()))
 		http.Error(w, err.Error(), http.StatusBadGateway)
 		return
 	}

@@ -52,12 +52,6 @@ import logoDataUrl from "./assets/logo.webp";
   shadow.innerHTML = `
     <style id="stoat-style"></style>
     <div class="stoat-wrap" id="wrap">
-      <div class="stoat-logs" id="logsPanel">
-        <div class="stoat-logs-inner">
-          <div class="stoat-logs-title">Live logs</div>
-          <div class="stoat-logs-list" id="logsList"></div>
-        </div>
-      </div>
       <div class="stoat-bar" id="bar">
         <img class="stoat-brand-logo" id="brandLogo" src="${logoDataUrl}" alt="Stoat.run" />
         <button class="stoat-btn copy" id="copy" aria-label="Copy URL">
@@ -71,7 +65,6 @@ import logoDataUrl from "./assets/logo.webp";
           </span>
           <span>Copy</span>
         </button>
-        <button class="stoat-btn text" id="logs">Logs</button>
         <button class="stoat-btn close" id="close">Close Tunnel</button>
         <span class="stoat-right">
           <span class="stoat-divider" aria-hidden="true"></span>
@@ -96,10 +89,7 @@ import logoDataUrl from "./assets/logo.webp";
   const viewers = shadow.getElementById("viewers") as HTMLSpanElement | null;
   const brandLogo = shadow.getElementById("brandLogo") as HTMLImageElement | null;
   const copyBtn = shadow.getElementById("copy") as HTMLButtonElement | null;
-  const logsBtn = shadow.getElementById("logs") as HTMLButtonElement | null;
   const closeBtn = shadow.getElementById("close") as HTMLButtonElement | null;
-  const logsPanel = shadow.getElementById("logsPanel") as HTMLDivElement | null;
-  const logsList = shadow.getElementById("logsList") as HTMLDivElement | null;
   const feedback = shadow.getElementById("feedback") as HTMLDivElement | null;
   if (
     !wrap ||
@@ -107,10 +97,7 @@ import logoDataUrl from "./assets/logo.webp";
     !bar ||
     !viewers ||
     !copyBtn ||
-    !logsBtn ||
     !closeBtn ||
-    !logsPanel ||
-    !logsList ||
     !feedback ||
     !brandLogo
   ) {
@@ -166,9 +153,6 @@ import logoDataUrl from "./assets/logo.webp";
   object-fit: contain;
   display: block;
   pointer-events: none;
-}
-.stoat-btn.text {
-  color: #6b7280;
 }
 .stoat-btn {
   border: 0;
@@ -259,85 +243,11 @@ import logoDataUrl from "./assets/logo.webp";
   pointer-events: none;
 }
 .stoat-feedback.show { opacity: 1; transform: translateY(0); }
-.stoat-logs {
-  position: absolute;
-  left: 0;
-  right: 0;
-  bottom: calc(100% + 8px);
-  border: 1px solid rgba(15, 23, 42, 0.12);
-  border-radius: var(--stoat-radius);
-  background: rgba(255, 255, 255, 0.96);
-  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.14);
-  overflow: hidden;
-  clip-path: inset(100% 0 0 0 round var(--stoat-radius));
-  opacity: 0;
-  transform: translateY(8px) scale(0.98);
-  transform-origin: bottom center;
-  pointer-events: none;
-  transition:
-    clip-path 260ms cubic-bezier(0.32, 0.72, 0, 1),
-    opacity 200ms cubic-bezier(0.2, 0.8, 0.2, 1),
-    transform 260ms cubic-bezier(0.32, 0.72, 0, 1);
-}
-.stoat-wrap.logs-open .stoat-logs {
-  clip-path: inset(0 0 0 0 round var(--stoat-radius));
-  opacity: 1;
-  transform: translateY(0) scale(1);
-  pointer-events: auto;
-}
-.stoat-logs-inner {
-  padding: 8px 10px;
-  min-width: 280px;
-}
-.stoat-logs-title {
-  font-size: 12px;
-  color: #6b7280;
-  margin-bottom: 6px;
-}
-.stoat-logs-list {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  height: 160px;
-  max-height: 160px;
-  overflow-y: auto;
-  overflow-x: hidden;
-  overscroll-behavior: contain;
-  -webkit-overflow-scrolling: touch;
-  padding-right: 2px;
-  scrollbar-gutter: stable;
-  scrollbar-width: thin;
-  scrollbar-color: rgba(100, 116, 139, 0.5) transparent;
-}
-.stoat-logs-list::-webkit-scrollbar {
-  width: 8px;
-}
-.stoat-logs-list::-webkit-scrollbar-track {
-  background: transparent;
-}
-.stoat-logs-list::-webkit-scrollbar-thumb {
-  background: rgba(100, 116, 139, 0.45);
-  border-radius: 999px;
-}
-.stoat-logs-list::-webkit-scrollbar-thumb:hover {
-  background: rgba(100, 116, 139, 0.65);
-}
-.stoat-log-item {
-  font-size: 12px;
-  color: #4b5563;
-  background: rgba(15, 23, 42, 0.04);
-  border-radius: 8px;
-  padding: 4px 8px;
-  white-space: nowrap;
-  text-overflow: ellipsis;
-  overflow: hidden;
-}
 @media (prefers-reduced-motion: reduce) {
   .stoat-wrap,
   .stoat-bar,
   .stoat-btn,
-  .stoat-feedback,
-  .stoat-logs {
+  .stoat-feedback {
     transition: none;
   }
 }
@@ -348,10 +258,6 @@ import logoDataUrl from "./assets/logo.webp";
   let isDragging = false;
   let dragOffset = { x: 0, y: 0 };
   let copyResetTimer: number | undefined;
-  let isLogsOpen = false;
-  const logItems: string[] = [];
-  let logsStream: EventSource | null = null;
-  let streamConnected = false;
   const EDGE_MARGIN = 18;
   const DRAG_MARGIN = 10;
 
@@ -366,71 +272,6 @@ import logoDataUrl from "./assets/logo.webp";
     feedback.style.left = `${Math.max(12, left)}px`;
     feedback.style.top = `${top}px`;
     window.setTimeout(() => feedback.classList.remove("show"), 900);
-  };
-
-  const addLog = (msg: string): void => {
-    const now = new Date();
-    const hh = String(now.getHours()).padStart(2, "0");
-    const mm = String(now.getMinutes()).padStart(2, "0");
-    const ss = String(now.getSeconds()).padStart(2, "0");
-    logItems.unshift(`${hh}:${mm}:${ss} ${msg}`);
-    if (logItems.length > 8) logItems.length = 8;
-    logsList.innerHTML = logItems
-      .map((line) => `<div class="stoat-log-item">${line.replace(/</g, "&lt;")}</div>`)
-      .join("");
-  };
-
-  const closeLogsStream = (): void => {
-    if (logsStream) {
-      logsStream.close();
-      logsStream = null;
-    }
-    streamConnected = false;
-  };
-
-  const openLogsStream = (): void => {
-    if (logsStream) return;
-    addLog("Connecting to live logs…");
-    const stream = new EventSource(`/.stoat/logs?slug=${encodeURIComponent(slug)}`);
-    logsStream = stream;
-    streamConnected = false;
-
-    stream.addEventListener("log", (event: MessageEvent<string>) => {
-      try {
-        const payload = JSON.parse(event.data) as { message?: string; seq?: number; time?: string };
-        if (typeof payload.message === "string" && payload.message.length > 0) {
-          addLog(payload.message);
-        }
-      } catch {
-        // ignore malformed log entries
-      }
-      if (!streamConnected) {
-        streamConnected = true;
-      }
-    });
-
-    stream.addEventListener("end", () => {
-      addLog("Tunnel closed");
-      closeLogsStream();
-    });
-
-    stream.onerror = () => {
-      if (isLogsOpen) {
-        addLog("Live logs unavailable");
-      }
-      closeLogsStream();
-    };
-  };
-
-  const setLogsOpen = (next: boolean): void => {
-    isLogsOpen = next;
-    wrap.classList.toggle("logs-open", next);
-    logsBtn.setAttribute("aria-pressed", next ? "true" : "false");
-    if (next) {
-      openLogsStream();
-    } else {
-      closeLogsStream();
-    }
   };
 
   const setCollapsedUI = (collapsed: boolean): void => {
@@ -490,12 +331,9 @@ import logoDataUrl from "./assets/logo.webp";
     window.addEventListener("pointerup", onPointerUp);
   });
 
-  logsBtn.addEventListener("click", () => setLogsOpen(!isLogsOpen));
-
   copyBtn.addEventListener("click", async () => {
     try {
       await navigator.clipboard.writeText(window.location.href);
-      addLog("Copied public URL");
       copyBtn.classList.add("copied");
       if (copyResetTimer !== undefined) {
         window.clearTimeout(copyResetTimer);
@@ -504,13 +342,11 @@ import logoDataUrl from "./assets/logo.webp";
         copyBtn.classList.remove("copied");
       }, 1200);
     } catch {
-      addLog("Copy failed");
       showFeedback("Copy failed");
     }
   });
 
   closeBtn.addEventListener("click", async () => {
-    addLog("Closing tunnel...");
     wrap.style.opacity = "0";
     wrap.style.pointerEvents = "none";
     try {
@@ -521,16 +357,13 @@ import logoDataUrl from "./assets/logo.webp";
         method: "POST",
       });
       if (res.ok) {
-        addLog("Tunnel closed");
         host.remove();
       } else {
-        addLog("Close failed");
         wrap.style.opacity = "1";
         wrap.style.pointerEvents = "";
         showFeedback("Close failed");
       }
     } catch {
-      addLog("Close failed");
       wrap.style.opacity = "1";
       wrap.style.pointerEvents = "";
       showFeedback("Close failed");
@@ -551,7 +384,6 @@ import logoDataUrl from "./assets/logo.webp";
   };
 
   setCollapsedUI(false);
-  addLog("Overlay ready");
   placeByState();
   void pollViewers();
   const interval = window.setInterval(() => {
@@ -564,6 +396,5 @@ import logoDataUrl from "./assets/logo.webp";
     if (copyResetTimer !== undefined) {
       window.clearTimeout(copyResetTimer);
     }
-    closeLogsStream();
   });
 })();

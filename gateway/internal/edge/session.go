@@ -43,22 +43,9 @@ type TunnelConn struct {
 	viewerLastSeen map[string]time.Time
 	missedPongs  atomic.Int32
 	lastPongUnix atomic.Int64
-
-	logsMu          sync.Mutex
-	logSeq          uint64
-	logRing         []LogEntry
-	logSubs         map[chan LogEntry]struct{}
-	logRingCapacity int
 }
 
 const viewerActiveWindow = 30 * time.Second
-const defaultLogRingCapacity = 100
-
-type LogEntry struct {
-	Seq     uint64    `json:"seq"`
-	Time    time.Time `json:"time"`
-	Message string    `json:"message"`
-}
 
 func (t *TunnelConn) ViewerCount() int64 {
 	if t == nil {
@@ -163,67 +150,6 @@ func (t *TunnelConn) Close() {
 			close(t.closed)
 		}
 	})
-}
-
-func (t *TunnelConn) AddLog(message string) {
-	if t == nil || strings.TrimSpace(message) == "" {
-		return
-	}
-	entry := LogEntry{
-		Time:    time.Now(),
-		Message: message,
-	}
-
-	t.logsMu.Lock()
-	t.logSeq++
-	entry.Seq = t.logSeq
-
-	capacity := t.logRingCapacity
-	if capacity <= 0 {
-		capacity = defaultLogRingCapacity
-	}
-	if len(t.logRing) >= capacity {
-		copy(t.logRing, t.logRing[1:])
-		t.logRing[len(t.logRing)-1] = entry
-	} else {
-		t.logRing = append(t.logRing, entry)
-	}
-
-	subs := make([]chan LogEntry, 0, len(t.logSubs))
-	for ch := range t.logSubs {
-		subs = append(subs, ch)
-	}
-	t.logsMu.Unlock()
-
-	for _, ch := range subs {
-		select {
-		case ch <- entry:
-		default:
-		}
-	}
-}
-
-func (t *TunnelConn) SubscribeLogs(ctx context.Context) (<-chan LogEntry, []LogEntry) {
-	ch := make(chan LogEntry, 16)
-
-	t.logsMu.Lock()
-	if t.logSubs == nil {
-		t.logSubs = make(map[chan LogEntry]struct{})
-	}
-	t.logSubs[ch] = struct{}{}
-	history := make([]LogEntry, len(t.logRing))
-	copy(history, t.logRing)
-	t.logsMu.Unlock()
-
-	go func() {
-		<-ctx.Done()
-		t.logsMu.Lock()
-		delete(t.logSubs, ch)
-		t.logsMu.Unlock()
-		close(ch)
-	}()
-
-	return ch, history
 }
 
 type SessionRegistry struct {
