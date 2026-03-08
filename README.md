@@ -3,5 +3,5 @@
 </p>
 
 <p align="center">
-  public localhost urls in seconds. no signup, no config, no dashboard. <a href="https://stoat.run">try stoat.run 🐾</a>
+  public localhost urls in seconds. no signup, no config, no dashboard.
 </p>
