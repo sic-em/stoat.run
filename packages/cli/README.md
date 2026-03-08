@@ -1,7 +1,3 @@
-# stoat.run
-
-Share your localhost in one command.
-
 ## Install
 
 ```bash
@@ -13,8 +9,28 @@ bun add -g stoat.run
 
 ## Usage
 
+### `stoat http <port>`
+
+Expose a local HTTP server.
+
 ```bash
 stoat http 3000
+stoat http 3000 --slug my-app
+stoat http 3000 --auth user:pass
+stoat http 3000 --expiry 3600
+```
+
+| Option               | Description                                |
+| -------------------- | ------------------------------------------ |
+| `--slug <slug>`      | Request a specific slug for the public URL |
+| `--auth <user:pass>` | Require basic auth for public access       |
+| `--expiry <seconds>` | Session expiry in seconds                  |
+
+### `stoat status`
+
+Show the current tunnel status.
+
+```bash
 stoat status
 ```
 
