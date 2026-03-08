@@ -7,8 +7,8 @@ function ThemeProvider({ children, ...props }: React.ComponentProps<typeof NextT
   return (
     <NextThemesProvider
       attribute="class"
-      defaultTheme="system"
-      enableSystem
+      defaultTheme="light"
+      enableSystem={false}
       disableTransitionOnChange
       {...props}
     >
