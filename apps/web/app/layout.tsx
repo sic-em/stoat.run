@@ -16,7 +16,7 @@ const fontMono = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
-  metadataBase: new URL('https://discova.us'),
+  metadataBase: new URL('https://stoat.run'),
   title: 'stoat.run — tiny tunnels for localhost',
   description:
     'expose your local server to the internet with one tiny command. no signup, no config — just stoat http 3000.',

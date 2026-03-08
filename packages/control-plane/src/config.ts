@@ -20,15 +20,15 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): ControlPlaneCo
   return {
     port: parsePositiveInt(env.PORT, 4000),
     edgeBase: sanitizeBase(
-      env.STOAT_EDGE_BASE ?? "wss://edge.discova.us",
-      "wss://edge.discova.us"
+      env.STOAT_EDGE_BASE ?? "wss://edge.stoat.run",
+      "wss://edge.stoat.run"
     ),
     publicBase: sanitizeBase(
-      (env.STOAT_PUBLIC_BASE ?? "https://{slug}.discova.us").replace(
+      (env.STOAT_PUBLIC_BASE ?? "https://{slug}.stoat.run").replace(
         /\s+/g,
         ""
       ),
-      "https://{slug}.discova.us"
+      "https://{slug}.stoat.run"
     ),
     defaultExpirySecs: parsePositiveInt(env.DEFAULT_EXPIRY_SECS, 86400),
   };

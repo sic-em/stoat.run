@@ -5,7 +5,7 @@ import { InteractiveMode } from "../interactive.js";
 
 const CONTROL_PLANE_URL =
   process.env["STOAT_CONTROL_PLANE_URL"] ??
-  "https://cp.discova.us";
+  "https://cp.stoat.run";
 
 interface HttpOptions {
   slug?: string;

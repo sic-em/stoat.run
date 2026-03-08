@@ -20,4 +20,4 @@ stoat status
 
 ## Environment
 
-- `STOAT_CONTROL_PLANE_URL` (default: `https://cp.discova.us`)
+- `STOAT_CONTROL_PLANE_URL` (default: `https://cp.stoat.run`)

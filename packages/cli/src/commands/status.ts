@@ -2,7 +2,7 @@ import { loadSession } from "../session.js";
 
 const CONTROL_PLANE_URL =
   process.env["STOAT_CONTROL_PLANE_URL"] ??
-  "https://cp.discova.us";
+  "https://cp.stoat.run";
 
 interface SessionStatusResponse {
   slug: string;
