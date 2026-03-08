@@ -15,20 +15,20 @@ const fontMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Stoat.run — Share localhost in one command",
+  title: "stoat.run — tiny tunnels for localhost",
   description:
-    "Expose your local dev server to the internet instantly. No signup, no config — just stoat http 3000.",
+    "expose your local server to the internet with one tiny command. no signup, no config — just stoat http 3000.",
   openGraph: {
-    title: "Stoat.run — Share localhost in one command",
+    title: "stoat.run — tiny tunnels for localhost",
     description:
-      "Expose your local dev server to the internet instantly. No signup, no config.",
+      "fast, simple localhost sharing with public urls in seconds.",
     type: "website",
-    siteName: "Stoat.run",
+    siteName: "stoat.run",
   },
   twitter: {
     card: "summary_large_image",
-    title: "Stoat.run — Share localhost in one command",
-    description: "Expose your local dev server instantly with one command.",
+    title: "stoat.run — tiny tunnels for localhost",
+    description: "fast, simple localhost sharing in seconds.",
   },
 };
 
