@@ -1,6 +1,6 @@
 {
   "name": "stoat.run",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Share your localhost in one command",
   "license": "MIT",
   "author": "sic-em",
@@ -21,7 +21,7 @@
     "websocket"
   ],
   "bin": {
-    "stoat": "./dist/bin.cjs"
+    "stoat": "dist/bin.cjs"
   },
   "files": [
     "dist",
