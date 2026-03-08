@@ -37,6 +37,15 @@ export class LocalProxy {
         headers[k] = Array.isArray(v) ? v.join(", ") : v;
       }
 
+      const forwardedHost =
+        headers["x-forwarded-host"]?.split(",")[0]?.trim() || headers["host"];
+      if (forwardedHost) {
+        headers["x-forwarded-host"] = forwardedHost;
+      }
+      if (!headers["x-forwarded-proto"]) {
+        headers["x-forwarded-proto"] = "https";
+      }
+
       const { statusCode, headers: resHeaders, body } = await request(url, {
         method: meta.method,
         headers,
