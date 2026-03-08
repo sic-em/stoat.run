@@ -84,6 +84,7 @@ func (h *GatewayHandler) HandleTunnelUpgrade(w http.ResponseWriter, r *http.Requ
 		BasicAuth: sessionInfo.BasicAuth,
 		WSConn:    conn,
 		streams:   make(map[uint16]*Stream),
+		viewerLastSeen: make(map[string]time.Time),
 		nextID:    2,
 		limiter:   limiter,
 		ctx:       tunnelCtx,

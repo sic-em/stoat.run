@@ -6,6 +6,7 @@ import (
 	"io"
 	"net/http"
 	"strconv"
+	"strings"
 	"time"
 )
 
@@ -33,8 +34,7 @@ func (h *GatewayHandler) ProxyRequest(tunnel *TunnelConn, w http.ResponseWriter,
 		return
 	}
 
-	tunnel.IncrementViewers()
-	defer tunnel.DecrementViewers()
+	tunnel.TouchViewer(clientIPFromRequest(r), r.Header.Get("User-Agent"))
 
 	stream, err := tunnel.AllocStream()
 	if err != nil {
@@ -70,6 +70,23 @@ func (h *GatewayHandler) ProxyRequest(tunnel *TunnelConn, w http.ResponseWriter,
 		http.Error(w, err.Error(), http.StatusBadGateway)
 		return
 	}
+}
+
+func clientIPFromRequest(r *http.Request) string {
+	if r == nil {
+		return ""
+	}
+	xff := strings.TrimSpace(r.Header.Get("X-Forwarded-For"))
+	if xff != "" {
+		parts := strings.Split(xff, ",")
+		if len(parts) > 0 {
+			first := strings.TrimSpace(parts[0])
+			if first != "" {
+				return first
+			}
+		}
+	}
+	return r.RemoteAddr
 }
 
 func (h *GatewayHandler) forwardRequestBody(tunnel *TunnelConn, streamID uint16, body io.ReadCloser) error {

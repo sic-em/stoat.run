@@ -3,8 +3,11 @@ package edge
 import (
 	"context"
 	"errors"
+	"net"
+	"strings"
 	"sync"
 	"sync/atomic"
+	"time"
 
 	"github.com/gorilla/websocket"
 	"golang.org/x/time/rate"
@@ -36,30 +39,74 @@ type TunnelConn struct {
 
 	closeOnce sync.Once
 
-	viewerCount  atomic.Int64
+	viewersMu      sync.Mutex
+	viewerLastSeen map[string]time.Time
 	missedPongs  atomic.Int32
 	lastPongUnix atomic.Int64
 }
+
+const viewerActiveWindow = 30 * time.Second
 
 func (t *TunnelConn) ViewerCount() int64 {
 	if t == nil {
 		return 0
 	}
-	return t.viewerCount.Load()
+	return int64(t.cleanupAndCountViewers(time.Now()))
 }
 
-func (t *TunnelConn) IncrementViewers() {
+func (t *TunnelConn) TouchViewer(remoteAddr, userAgent string) {
 	if t == nil {
 		return
 	}
-	t.viewerCount.Add(1)
+	key := viewerKey(remoteAddr, userAgent)
+	now := time.Now()
+
+	t.viewersMu.Lock()
+	if t.viewerLastSeen == nil {
+		t.viewerLastSeen = make(map[string]time.Time)
+	}
+	t.viewerLastSeen[key] = now
+	t.cleanupAndCountViewersLocked(now)
+	t.viewersMu.Unlock()
 }
 
-func (t *TunnelConn) DecrementViewers() {
-	if t == nil {
-		return
+func (t *TunnelConn) cleanupAndCountViewers(now time.Time) int {
+	t.viewersMu.Lock()
+	defer t.viewersMu.Unlock()
+	return t.cleanupAndCountViewersLocked(now)
+}
+
+func (t *TunnelConn) cleanupAndCountViewersLocked(now time.Time) int {
+	cutoff := now.Add(-viewerActiveWindow)
+	for key, lastSeen := range t.viewerLastSeen {
+		if lastSeen.Before(cutoff) {
+			delete(t.viewerLastSeen, key)
+		}
 	}
-	t.viewerCount.Add(-1)
+	return len(t.viewerLastSeen)
+}
+
+func viewerKey(remoteAddr, userAgent string) string {
+	client := extractClientIP(remoteAddr)
+	if client == "" {
+		client = "unknown"
+	}
+	ua := strings.TrimSpace(userAgent)
+	if ua == "" {
+		ua = "unknown"
+	}
+	return client + "|" + ua
+}
+
+func extractClientIP(addr string) string {
+	addr = strings.TrimSpace(addr)
+	if addr == "" {
+		return ""
+	}
+	if host, _, err := net.SplitHostPort(addr); err == nil {
+		return strings.TrimSpace(host)
+	}
+	return addr
 }
 
 func (t *TunnelConn) WriteFrame(frame Frame) error {
