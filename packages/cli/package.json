@@ -1,0 +1,30 @@
+{
+  "name": "ferret",
+  "version": "0.1.0",
+  "description": "Share your localhost in one command",
+  "bin": {
+    "ferret": "./dist/bin.cjs"
+  },
+  "exports": {
+    ".": "./dist/FerretOverlay.js"
+  },
+  "type": "module",
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint src",
+    "test": "node --test dist/protocol.test.js"
+  },
+  "dependencies": {
+    "commander": "^12.0.0",
+    "undici": "^7.0.0",
+    "ws": "^8.18.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "@types/ws": "^8.5.0",
+    "tsup": "^8.0.0",
+    "typescript": "^5.5.0"
+  }
+}

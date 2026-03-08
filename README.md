@@ -1,21 +1,77 @@
-# shadcn/ui monorepo template
+# Ferret
 
-This is a Next.js monorepo template with shadcn/ui.
+Ferret is a localhost tunneling system:
 
-## Adding components
+- `packages/control-plane`: session registry and token validation
+- `gateway`: WebSocket tunnel edge + HTTP proxy
+- `packages/cli`: `ferret` CLI (`ferret http <port>`, `ferret status`)
+- `packages/overlay`: in-browser tunnel overlay script and helpers
+- `apps/web`: landing site
 
-To add components to your app, run the following command at the root of your `web` app:
+## Local Quickstart
+
+From the repo root:
 
 ```bash
-pnpm dlx shadcn@latest add button -c apps/web
+pnpm install
+pnpm --filter @ferret/control-plane build
+pnpm --filter @ferret/overlay build
+pnpm --filter ferret build
 ```
 
-This will place the ui components in the `packages/ui/src/components` directory.
+Terminal 1 (Control Plane):
 
-## Using components
+```bash
+env PORT=4000 \
+  FERRET_EDGE_BASE=ws://localhost:8081 \
+  FERRET_PUBLIC_BASE='http://{slug}.localhost:8081' \
+  node packages/control-plane/dist/server.js
+```
 
-To use the components in your app, import them from the `ui` package.
+Terminal 2 (Gateway):
 
-```tsx
-import { Button } from "@workspace/ui/components/button";
+```bash
+cd gateway
+env PORT=8081 \
+  BASE_DOMAIN=localhost \
+  CONTROL_PLANE_URL=http://127.0.0.1:4000 \
+  OVERLAY_DIR=../packages/overlay/dist \
+  go run .
+```
+
+Terminal 3 (Your app on port 3000):
+
+```bash
+pnpm dev
+```
+
+Terminal 4 (CLI):
+
+```bash
+env FERRET_CONTROL_PLANE_URL=http://127.0.0.1:4000 \
+  node packages/cli/dist/bin.cjs http 3000
+```
+
+Ferret prints a URL such as `http://soft-fish-4993.localhost:8081`.
+
+## Local E2E Test
+
+Run the full local integration script:
+
+```bash
+pnpm test:e2e:local
+```
+
+The script validates:
+
+- tunnel proxy GET and POST body passthrough
+- overlay routes (`/.ferret/overlay.js`, `/.ferret/status`, `/.ferret/viewers`)
+- basic-auth policy
+- expiry policy
+
+## CLI Commands
+
+```bash
+ferret http 3000
+ferret status
 ```

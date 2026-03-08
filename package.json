@@ -5,6 +5,10 @@
   "scripts": {
     "build": "turbo build",
     "dev": "turbo dev",
+    "dev:cp": "pnpm --filter @ferret/control-plane dev",
+    "dev:cli": "pnpm --filter ferret dev",
+    "build:gateway": "cd gateway && go build -o ../dist/ferret-gateway .",
+    "test:e2e:local": "bash scripts/e2e-local.sh",
     "lint": "turbo lint",
     "format": "turbo format",
     "typecheck": "turbo typecheck"
