@@ -6,9 +6,15 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"strings"
 )
 
 func (h *GatewayHandler) HandleOverlayRoutes(w http.ResponseWriter, r *http.Request) bool {
+	if strings.HasPrefix(r.URL.Path, "/logo-") && strings.HasSuffix(r.URL.Path, ".webp") {
+		h.serveOverlayLogo(w, r)
+		return true
+	}
+
 	switch r.URL.Path {
 	case "/.stoat/overlay.js":
 		h.serveOverlayScript(w, r)
@@ -48,6 +54,30 @@ func resolveOverlayScriptPath(overlayDir string) (string, error) {
 		}
 	}
 	return "", errors.New("overlay script not found")
+}
+
+func (h *GatewayHandler) serveOverlayLogo(w http.ResponseWriter, r *http.Request) {
+	path, err := resolveOverlayLogoPath(h.cfg.OverlayDir)
+	if err != nil {
+		h.writeJSON(w, http.StatusNotFound, map[string]string{"error": "overlay logo not found"})
+		return
+	}
+	w.Header().Set("Content-Type", "image/webp")
+	http.ServeFile(w, r, path)
+}
+
+func resolveOverlayLogoPath(overlayDir string) (string, error) {
+	matches, _ := filepath.Glob(filepath.Join(overlayDir, "logo-*.webp"))
+	for _, match := range matches {
+		if stat, err := os.Stat(match); err == nil && !stat.IsDir() {
+			return match, nil
+		}
+	}
+	fallback := filepath.Join(overlayDir, "logo.webp")
+	if stat, err := os.Stat(fallback); err == nil && !stat.IsDir() {
+		return fallback, nil
+	}
+	return "", errors.New("overlay logo not found")
 }
 
 func (h *GatewayHandler) handleViewerCount(w http.ResponseWriter, r *http.Request) {

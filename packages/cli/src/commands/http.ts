@@ -88,6 +88,7 @@ export async function httpCommand(
   });
 
   // 3. connect tunnel
+  let interactive: InteractiveMode | null = null;
   const tunnel = new TunnelClient({
     edgeUrl,
     slug,
@@ -100,10 +101,17 @@ export async function httpCommand(
       if (payload.reason === "session_expired") {
         clearSession();
       }
+      if (payload.reason === "closed_by_overlay") {
+        process.stdout.write("  Tunnel closed from overlay\n");
+        tunnel.stop();
+        clearSession();
+        interactive?.stop();
+        process.exit(0);
+      }
     },
   });
 
-  const interactive = new InteractiveMode({
+  interactive = new InteractiveMode({
     publicUrl,
     tunnel,
     onQuit: () => {
