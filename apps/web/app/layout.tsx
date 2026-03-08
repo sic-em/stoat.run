@@ -15,21 +15,26 @@ const fontMono = JetBrains_Mono({
   variable: '--font-mono',
 });
 
+const description =
+  'expose your local server to the internet with one tiny command. no signup, no config — just stoat http 3000.';
+
 export const metadata: Metadata = {
   metadataBase: new URL('https://stoat.run'),
-  title: 'stoat.run — tiny tunnels for localhost',
-  description:
-    'expose your local server to the internet with one tiny command. no signup, no config — just stoat http 3000.',
+  title: {
+    default: 'stoat.run — tiny tunnels for localhost',
+    template: '%s | stoat.run',
+  },
+  description,
   openGraph: {
-    title: 'stoat.run — tiny tunnels for localhost',
-    description: 'fast, simple localhost sharing with public urls in seconds.',
+    description,
     type: 'website',
+    url: 'https://stoat.run',
     siteName: 'stoat.run',
+    locale: 'en_US',
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'stoat.run — tiny tunnels for localhost',
-    description: 'fast, simple localhost sharing in seconds.',
+    description,
   },
 };
 

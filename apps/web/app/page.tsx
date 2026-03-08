@@ -1,7 +1,14 @@
+import type { Metadata } from 'next';
 import Image from 'next/image';
 import { codeToHtml } from 'shiki';
 import { HomeHero } from '@/components/home-hero';
 import type { HighlightedMethod } from '@/lib/types';
+
+export const metadata: Metadata = {
+  alternates: {
+    canonical: 'https://stoat.run',
+  },
+};
 
 const shikiOptions = {
   themes: { light: 'vitesse-light', dark: 'vitesse-dark' },

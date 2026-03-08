@@ -17,6 +17,7 @@ function Arrow() {
       stroke-width="2"
       stroke-linecap="round"
       stroke-linejoin="round"
+      aria-hidden="true"
     >
       <path stroke="none" d="M0 0h24v24H0z" fill="none" />
       <path d="M5 12l14 0" />
@@ -63,6 +64,7 @@ export default async function Image() {
           fontFamily: 'Inter',
         }}
       >
+        {/* biome-ignore lint/performance/noImgElement: plain <img> required inside next/og ImageResponse */}
         <img src={logoSrc} width={90} height={90} alt="" style={{ objectFit: 'contain' }} />
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8 }}>
           <span

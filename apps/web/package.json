@@ -7,8 +7,8 @@
     "dev": "next dev --turbopack",
     "build": "next build",
     "start": "next start",
-    "format": "pnpx @biomejs/biome check --write .",
-    "check": "pnpx @biomejs/biome check ."
+    "format": "biome check --write .",
+    "check": "biome check ."
   },
   "dependencies": {
     "@base-ui/react": "^1.2.0",

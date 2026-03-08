@@ -5,6 +5,9 @@
     "enabled": true,
     "useIgnoreFile": false
   },
+  "files": {
+    "includes": ["**", "!node_modules", "!.next", "!dist", "!build"]
+  },
   "assist": {
     "actions": {
       "source": {
