@@ -90,14 +90,21 @@ func (h *GatewayHandler) handleOverlayClose(w http.ResponseWriter, r *http.Reque
 
 	slug := r.URL.Query().Get("slug")
 	token := r.URL.Query().Get("token")
-	if slug == "" || token == "" {
-		h.writeJSON(w, http.StatusBadRequest, map[string]string{"error": "slug_and_token_required"})
+	if slug == "" {
+		h.writeJSON(w, http.StatusBadRequest, map[string]string{"error": "slug_required"})
 		return
 	}
 
 	tunnel, ok := h.registry.Get(slug)
 	if !ok {
 		h.writeJSON(w, http.StatusNotFound, map[string]string{"error": "session_not_found"})
+		return
+	}
+	if token == "" {
+		token = tunnel.Token
+	}
+	if token == "" {
+		h.writeJSON(w, http.StatusBadRequest, map[string]string{"error": "token_required"})
 		return
 	}
 
