@@ -503,6 +503,8 @@ import logoDataUrl from "./assets/logo.webp";
   });
 
   closeBtn.addEventListener("click", async () => {
+    wrap.style.opacity = "0";
+    wrap.style.pointerEvents = "none";
     try {
       const token = scriptTag.getAttribute("data-token") ?? "";
       const params = new URLSearchParams({ slug });
@@ -511,14 +513,15 @@ import logoDataUrl from "./assets/logo.webp";
         method: "POST",
       });
       if (res.ok) {
-        showFeedback("Tunnel closed");
-        window.setTimeout(() => {
-          host.remove();
-        }, 120);
+        host.remove();
       } else {
+        wrap.style.opacity = "1";
+        wrap.style.pointerEvents = "";
         showFeedback("Close failed");
       }
     } catch {
+      wrap.style.opacity = "1";
+      wrap.style.pointerEvents = "";
       showFeedback("Close failed");
     }
   });
