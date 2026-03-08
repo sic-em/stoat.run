@@ -22,7 +22,6 @@ export function CopyButton({ text }: { text: string }) {
   };
 
   return (
-    // Emil: scale(0.97) on press, spring for natural feel, asymmetric timing
     <motion.button
       onClick={copy}
       whileTap={reduced ? undefined : { scale: 0.97 }}
@@ -30,7 +29,6 @@ export function CopyButton({ text }: { text: string }) {
       className="relative flex h-7 w-7 shrink-0 cursor-pointer items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
       aria-label="Copy to clipboard"
     >
-      {/* Emil: animate only opacity+transform, use AnimatePresence for icon swap */}
       <AnimatePresence mode="wait" initial={false}>
         {copied ? (
           <motion.span
