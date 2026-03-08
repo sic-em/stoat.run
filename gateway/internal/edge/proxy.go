@@ -49,6 +49,10 @@ func (h *GatewayHandler) ProxyRequest(tunnel *TunnelConn, w http.ResponseWriter,
 		Headers:    r.Header.Clone(),
 		RemoteAddr: r.RemoteAddr,
 	}
+	if meta.Headers == nil {
+		meta.Headers = make(map[string][]string)
+	}
+	meta.Headers["Host"] = []string{r.Host}
 	metaRaw, _ := json.Marshal(meta)
 
 	if err := tunnel.WriteFrame(Frame{

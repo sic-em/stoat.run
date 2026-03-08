@@ -34,17 +34,14 @@ export class LocalProxy {
     try {
       const headers: Record<string, string> = {};
       for (const [k, v] of Object.entries(meta.headers)) {
-        headers[k] = Array.isArray(v) ? v.join(", ") : v;
+        headers[k.toLowerCase()] = Array.isArray(v) ? v.join(", ") : v;
       }
 
-      const forwardedHost =
-        headers["x-forwarded-host"]?.split(",")[0]?.trim() || headers["host"];
+      const forwardedHost = headers["host"]?.split(",")[0]?.trim();
       if (forwardedHost) {
         headers["x-forwarded-host"] = forwardedHost;
       }
-      if (!headers["x-forwarded-proto"]) {
-        headers["x-forwarded-proto"] = "https";
-      }
+      headers["x-forwarded-proto"] = "https";
 
       const { statusCode, headers: resHeaders, body } = await request(url, {
         method: meta.method,
