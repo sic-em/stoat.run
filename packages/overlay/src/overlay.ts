@@ -298,8 +298,29 @@ import logoDataUrl from "./assets/logo.webp";
   display: flex;
   flex-direction: column;
   gap: 4px;
+  height: 160px;
   max-height: 160px;
-  overflow: auto;
+  overflow-y: auto;
+  overflow-x: hidden;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+  padding-right: 2px;
+  scrollbar-gutter: stable;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(100, 116, 139, 0.5) transparent;
+}
+.stoat-logs-list::-webkit-scrollbar {
+  width: 8px;
+}
+.stoat-logs-list::-webkit-scrollbar-track {
+  background: transparent;
+}
+.stoat-logs-list::-webkit-scrollbar-thumb {
+  background: rgba(100, 116, 139, 0.45);
+  border-radius: 999px;
+}
+.stoat-logs-list::-webkit-scrollbar-thumb:hover {
+  background: rgba(100, 116, 139, 0.65);
 }
 .stoat-log-item {
   font-size: 12px;
