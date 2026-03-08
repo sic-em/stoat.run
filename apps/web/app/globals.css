@@ -1,6 +1,14 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 
+/* Shiki dual-theme: light uses --shiki-light, dark uses --shiki-dark */
+.shiki-block span {
+  color: var(--shiki-light);
+}
+.dark .shiki-block span {
+  color: var(--shiki-dark);
+}
+
 @custom-variant dark (&:is(.dark *));
 @source "./**/*.{ts,tsx}";
 @source "../components/**/*.{ts,tsx}";
