@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="https://stoat.run/opengraph-image" alt="stoat.run open graph image" width="640" style="border-radius: 20px;" />
+  <img src="https://file.garden/aa15t3gnEzCVnhaM/image.png" alt="stoat.run open graph image" width="640" style="border-radius: 20px;" />
 </p>
 
 <p align="center">
