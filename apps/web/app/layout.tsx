@@ -19,13 +19,13 @@ const fontMono = JetBrains_Mono({
 });
 
 const description =
-  'Expose your local server to the internet with one tiny command. No signup, no config — just stoat http 3000.';
+  'expose your local server to the internet with one tiny command. no signup, no config — just stoat http 3000.';
 
 export const metadata: Metadata = {
   metadataBase: new URL('https://stoat.run'),
   title: {
-    default: 'Stoat.run — Tiny tunnels for localhost',
-    template: '%s | Stoat.run',
+    default: 'stoat.run — tiny tunnels for localhost',
+    template: '%s | stoat.run',
   },
   description,
   openGraph: {
