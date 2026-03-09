@@ -63,12 +63,7 @@ export default function RootLayout({
         )}
       </head>
       <body>
-        <ThemeProvider
-          attribute="class"
-          defaultTheme="dark"
-          enableSystem
-          disableTransitionOnChange
-        >
+        <ThemeProvider attribute="class" defaultTheme="dark" enableSystem disableTransitionOnChange>
           <div className="mx-auto w-full max-w-7xl">
             <header className="absolute top-0 right-0 left-0 z-50">
               <div className="mx-auto flex max-w-7xl items-center justify-end px-8 py-4">
