@@ -8,7 +8,8 @@
     "build": "next build",
     "start": "next start",
     "format": "biome check --write .",
-    "check": "biome check ."
+    "check": "biome check .",
+    "overlay:sync": "pnpm --filter @stoat-run/overlay build && mkdir -p public/.stoat && cp ../../packages/overlay/dist/overlay.global.js public/.stoat/overlay.js"
   },
   "dependencies": {
     "@base-ui/react": "^1.2.0",
