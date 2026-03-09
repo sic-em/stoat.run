@@ -72,10 +72,10 @@ export default function RootLayout({
               </div>
             </header>
             {children}
+            <Analytics />
           </div>
         </ThemeProvider>
         <ClickSound />
-        <Analytics />
       </body>
     </html>
   );
