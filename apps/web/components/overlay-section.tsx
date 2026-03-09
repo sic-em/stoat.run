@@ -1,5 +1,6 @@
 import { InlineCode } from '@/components/inline-code';
 import { InstallTabs } from '@/components/install-tabs';
+import { OverlayPreview } from '@/components/overlay-preview';
 import { ShikiBlock } from '@/components/shiki-block';
 import type { HighlightedMethod } from '@/lib/types';
 
@@ -17,8 +18,9 @@ export function OverlaySection({ methods, usageHtml }: OverlaySectionProps) {
       </p>
       <InstallTabs methods={methods} />
       <div className="rounded-md border">
-        <ShikiBlock html={usageHtml} variant="scrollable" />
+        <ShikiBlock html={usageHtml} variant="scrollable" lineNumbers />
       </div>
+      <OverlayPreview />
     </div>
   );
 }
