@@ -16,6 +16,7 @@ const containerVariants = { show: { transition: { staggerChildren: STAGGER } } }
 interface HomeHeroProps {
   logo: ReactNode;
   highlighted: HighlightedMethod[];
+  npxTypewriterOptions: Array<{ command: string; html: string }>;
   overlayHighlighted: HighlightedMethod[];
   overlayUsageHtml: string;
 }
@@ -23,6 +24,7 @@ interface HomeHeroProps {
 export function HomeHero({
   logo,
   highlighted,
+  npxTypewriterOptions,
   overlayHighlighted,
   overlayUsageHtml,
 }: HomeHeroProps) {
@@ -41,12 +43,12 @@ export function HomeHero({
       <motion.div variants={itemVariants}>{logo}</motion.div>
 
       <motion.p variants={itemVariants} className="text-base text-foreground leading-relaxed">
-        stoat.run gives your localhost a public URL in seconds. no signup, no config, no dashboard —
+        stoat.run gives your localhost a public URL in seconds. No signup, no config, no dashboard —
         just run one command and share the link.
       </motion.p>
 
       <motion.div variants={itemVariants}>
-        <InstallTabs methods={highlighted} />
+        <InstallTabs methods={highlighted} npxTypewriterOptions={npxTypewriterOptions} />
       </motion.div>
 
       <motion.div variants={itemVariants}>
