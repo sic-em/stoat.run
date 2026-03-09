@@ -5,6 +5,7 @@ import { Check, Copy, Eye } from 'lucide-react';
 import Image from 'next/image';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { Button } from '@/components/ui/button';
+import { cn } from '@/lib/utils';
 
 const PRESS_SPRING = { type: 'spring', stiffness: 400, damping: 24 } as const;
 const EASING = [0.32, 0.72, 0, 1] as const;
@@ -71,7 +72,10 @@ function MockOverlay({ onClose }: { onClose: () => void }) {
       }}
       role="region"
       aria-label="Tunnel overlay preview"
-      className={`fixed bottom-6 left-1/2 z-50 flex -translate-x-1/2 touch-none select-none items-center gap-1 rounded-xl border bg-card px-3 py-1.5 shadow-lg ${isDragging || isPressingDragArea ? 'cursor-grabbing' : 'cursor-grab'}`}
+      className={cn(
+        'fixed bottom-6 left-1/2 z-50 flex -translate-x-1/2 touch-none select-none items-center gap-1 rounded-xl border bg-card px-3 py-1.5 shadow-lg',
+        isDragging || isPressingDragArea ? 'cursor-grabbing' : 'cursor-grab',
+      )}
     >
       {/* Logo */}
       <Image
