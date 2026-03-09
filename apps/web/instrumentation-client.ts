@@ -1,3 +1,3 @@
-import betterlytics from "@betterlytics/tracker"
+import betterlytics from '@betterlytics/tracker';
 
-betterlytics.init("stoat-mmivdnht")
+betterlytics.init('stoat-mmivdnht');
