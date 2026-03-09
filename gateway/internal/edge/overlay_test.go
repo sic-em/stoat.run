@@ -42,3 +42,13 @@ func TestHandleViewerCountAndStatus(t *testing.T) {
 		t.Fatalf("status code = %d", statusResp.Code)
 	}
 }
+
+func TestHandleOverlayEventsRequiresSlug(t *testing.T) {
+	h := NewGatewayHandler(Config{BaseDomain: "localhost"}, &SessionRegistry{})
+	req := httptest.NewRequest(http.MethodGet, "/.stoat/events", nil)
+	resp := httptest.NewRecorder()
+	h.ServeHTTP(resp, req)
+	if resp.Code != http.StatusBadRequest {
+		t.Fatalf("status code = %d", resp.Code)
+	}
+}
