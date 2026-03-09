@@ -35,6 +35,8 @@ func main() {
 		ControlPlaneURL:    cfg.ControlPlaneURL,
 		ControlPlaneSecret: cfg.ControlPlaneSecret,
 		OverlayDir:         cfg.OverlayDir,
+		OverlayEventSalt:   cfg.OverlayEventSalt,
+		OverlayDebugRaw:    cfg.OverlayDebugRaw,
 		MaxBodySize:        cfg.MaxBodySize,
 		RateLimitRPS:       cfg.RateLimitRPS,
 		LogLevel:           cfg.LogLevel,
