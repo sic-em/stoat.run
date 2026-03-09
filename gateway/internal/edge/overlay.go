@@ -1,12 +1,15 @@
 package edge
 
 import (
+	"context"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"net/http"
 	"os"
 	"path/filepath"
 	"strings"
+	"time"
 )
 
 func (h *GatewayHandler) HandleOverlayRoutes(w http.ResponseWriter, r *http.Request) bool {
@@ -22,6 +25,9 @@ func (h *GatewayHandler) HandleOverlayRoutes(w http.ResponseWriter, r *http.Requ
 	case "/.stoat/viewers":
 		h.handleViewerCount(w, r)
 		return true
+	case "/.stoat/events":
+		h.handleOverlayEvents(w, r)
+		return true
 	case "/.stoat/status":
 		h.handleOverlayStatus(w, r)
 		return true
@@ -31,6 +37,75 @@ func (h *GatewayHandler) HandleOverlayRoutes(w http.ResponseWriter, r *http.Requ
 	default:
 		return false
 	}
+}
+
+func (h *GatewayHandler) handleOverlayEvents(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet {
+		h.writeJSON(w, http.StatusMethodNotAllowed, map[string]string{"error": "method_not_allowed"})
+		return
+	}
+
+	slug := strings.TrimSpace(r.URL.Query().Get("slug"))
+	if slug == "" {
+		h.writeJSON(w, http.StatusBadRequest, map[string]string{"error": "slug_required"})
+		return
+	}
+	if _, ok := h.registry.Get(slug); !ok {
+		h.writeJSON(w, http.StatusNotFound, map[string]string{"error": "session_not_found"})
+		return
+	}
+
+	flusher, ok := w.(http.Flusher)
+	if !ok {
+		h.writeJSON(w, http.StatusInternalServerError, map[string]string{"error": "stream_unsupported"})
+		return
+	}
+
+	w.Header().Set("Content-Type", "text/event-stream")
+	w.Header().Set("Cache-Control", "no-cache")
+	w.Header().Set("Connection", "keep-alive")
+	w.Header().Set("X-Accel-Buffering", "no")
+	w.WriteHeader(http.StatusOK)
+
+	eventCh, unsubscribe := h.overlayEvents.Subscribe(slug)
+	defer unsubscribe()
+
+	_, _ = w.Write([]byte("event: ready\ndata: {\"ok\":true}\n\n"))
+	flusher.Flush()
+
+	ticker := time.NewTicker(15 * time.Second)
+	defer ticker.Stop()
+
+	for {
+		select {
+		case <-r.Context().Done():
+			return
+		case <-ticker.C:
+			_, _ = w.Write([]byte("event: ping\ndata: {}\n\n"))
+			flusher.Flush()
+		case evt, ok := <-eventCh:
+			if !ok {
+				return
+			}
+			if err := writeSSEData(r.Context(), w, evt); err != nil {
+				return
+			}
+			flusher.Flush()
+		}
+	}
+}
+
+func writeSSEData(ctx context.Context, w http.ResponseWriter, event OverlayRequestEvent) error {
+	select {
+	case <-ctx.Done():
+		return ctx.Err()
+	default:
+	}
+	_, err := w.Write(marshalOverlaySSEEvent(event))
+	if err != nil {
+		return fmt.Errorf("write sse event: %w", err)
+	}
+	return nil
 }
 
 func (h *GatewayHandler) serveOverlayScript(w http.ResponseWriter, r *http.Request) {

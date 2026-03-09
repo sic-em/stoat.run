@@ -7,16 +7,18 @@ import (
 )
 
 type GatewayHandler struct {
-	cfg       Config
-	registry  *SessionRegistry
-	validator sessionValidator
+	cfg           Config
+	registry      *SessionRegistry
+	validator     sessionValidator
+	overlayEvents *overlayEventHub
 }
 
 func NewGatewayHandler(cfg Config, registry *SessionRegistry) *GatewayHandler {
 	return &GatewayHandler{
-		cfg:       cfg,
-		registry:  registry,
-		validator: newControlPlaneClient(cfg.ControlPlaneURL),
+		cfg:           cfg,
+		registry:      registry,
+		validator:     newControlPlaneClient(cfg.ControlPlaneURL),
+		overlayEvents: newOverlayEventHub(),
 	}
 }
 

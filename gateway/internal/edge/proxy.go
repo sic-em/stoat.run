@@ -29,12 +29,36 @@ type streamRSTPayload struct {
 	Reason string `json:"reason"`
 }
 
+type responseMetrics struct {
+	StatusCode int
+	Bytes      int64
+}
+
 func (h *GatewayHandler) ProxyRequest(tunnel *TunnelConn, w http.ResponseWriter, r *http.Request) {
 	if (Policy{}).Check(w, r, tunnel) {
 		return
 	}
 
 	tunnel.TouchViewer(clientIPFromRequest(r), r.Header.Get("User-Agent"))
+	startedAt := time.Now()
+	reqBytes := int64(0)
+	resBytes := int64(0)
+	statusCode := http.StatusBadGateway
+	var streamErr error
+
+	defer func() {
+		event := buildOverlayRequestEvent(
+			h.cfg,
+			tunnel.Slug,
+			r,
+			statusCode,
+			time.Since(startedAt),
+			reqBytes,
+			resBytes,
+			streamErr,
+		)
+		h.overlayEvents.Publish(tunnel.Slug, event)
+	}()
 
 	stream, err := tunnel.AllocStream()
 	if err != nil {
@@ -65,15 +89,21 @@ func (h *GatewayHandler) ProxyRequest(tunnel *TunnelConn, w http.ResponseWriter,
 		return
 	}
 
-	if err := h.forwardRequestBody(tunnel, stream.ID, r.Body); err != nil {
+	reqBytes, err = h.forwardRequestBody(tunnel, stream.ID, r.Body)
+	if err != nil {
+		streamErr = err
 		http.Error(w, "failed to send request body", http.StatusBadGateway)
 		return
 	}
 
-	if err := h.pipeResponseStream(stream, w); err != nil {
+	metrics, err := h.pipeResponseStream(stream, w)
+	if err != nil {
+		streamErr = err
 		http.Error(w, err.Error(), http.StatusBadGateway)
 		return
 	}
+	statusCode = metrics.StatusCode
+	resBytes = metrics.Bytes
 }
 
 func clientIPFromRequest(r *http.Request) string {
@@ -93,7 +123,7 @@ func clientIPFromRequest(r *http.Request) string {
 	return r.RemoteAddr
 }
 
-func (h *GatewayHandler) forwardRequestBody(tunnel *TunnelConn, streamID uint16, body io.ReadCloser) error {
+func (h *GatewayHandler) forwardRequestBody(tunnel *TunnelConn, streamID uint16, body io.ReadCloser) (int64, error) {
 	defer body.Close()
 
 	limitReader := io.LimitReader(body, h.cfg.MaxBodySize+1)
@@ -105,7 +135,7 @@ func (h *GatewayHandler) forwardRequestBody(tunnel *TunnelConn, streamID uint16,
 		if n > 0 {
 			total += int64(n)
 			if total > h.cfg.MaxBodySize {
-				return errors.New("request body exceeds max allowed size")
+				return 0, errors.New("request body exceeds max allowed size")
 			}
 
 			payload := make([]byte, n)
@@ -116,7 +146,7 @@ func (h *GatewayHandler) forwardRequestBody(tunnel *TunnelConn, streamID uint16,
 				StreamID: streamID,
 				Payload:  payload,
 			}); err != nil {
-				return err
+				return 0, err
 			}
 		}
 
@@ -124,69 +154,79 @@ func (h *GatewayHandler) forwardRequestBody(tunnel *TunnelConn, streamID uint16,
 			break
 		}
 		if err != nil {
-			return err
+			return 0, err
 		}
 	}
 
-	return tunnel.WriteFrame(Frame{
+	if err := tunnel.WriteFrame(Frame{
 		Type:     FrameTypeStreamEnd,
 		Flags:    FlagFinal,
 		StreamID: streamID,
 		Payload:  []byte{},
-	})
+	}); err != nil {
+		return 0, err
+	}
+	return total, nil
 }
 
-func (h *GatewayHandler) pipeResponseStream(stream *Stream, w http.ResponseWriter) error {
+func (h *GatewayHandler) pipeResponseStream(stream *Stream, w http.ResponseWriter) (responseMetrics, error) {
 	gotInit := false
+	statusCode := http.StatusNoContent
+	var bytesWritten int64
 	timeout := time.NewTimer(60 * time.Second)
 	defer timeout.Stop()
 
 	for {
 		select {
 		case <-timeout.C:
-			return errors.New("timeout waiting for tunnel response")
+			return responseMetrics{}, errors.New("timeout waiting for tunnel response")
 		case frame, ok := <-stream.respCh:
 			if !ok {
-				return errors.New("tunnel closed stream")
+				return responseMetrics{}, errors.New("tunnel closed stream")
 			}
 
 			switch frame.Type {
 			case FrameTypeResponseInit:
 				var initPayload responseInitPayload
 				if err := json.Unmarshal(frame.Payload, &initPayload); err != nil {
-					return errors.New("invalid response init payload")
+					return responseMetrics{}, errors.New("invalid response init payload")
 				}
 
 				copyResponseHeaders(w.Header(), initPayload.Headers)
 				if initPayload.StatusCode <= 0 {
 					initPayload.StatusCode = http.StatusOK
 				}
+				statusCode = initPayload.StatusCode
 				w.WriteHeader(initPayload.StatusCode)
 				gotInit = true
 				resetTimer(timeout)
 			case FrameTypeStreamData:
 				if !gotInit {
+					statusCode = http.StatusOK
 					w.WriteHeader(http.StatusOK)
 					gotInit = true
 				}
-				if _, err := w.Write(frame.Payload); err != nil {
-					return err
+				n, err := w.Write(frame.Payload)
+				if err != nil {
+					return responseMetrics{}, err
 				}
+				bytesWritten += int64(n)
 				resetTimer(timeout)
 			case FrameTypeStreamEnd:
 				if !gotInit {
+					statusCode = http.StatusNoContent
 					w.WriteHeader(http.StatusNoContent)
 				}
-				return nil
+				return responseMetrics{StatusCode: statusCode, Bytes: bytesWritten}, nil
 			case FrameTypeStreamRST:
 				var rst streamRSTPayload
 				if err := json.Unmarshal(frame.Payload, &rst); err != nil {
-					return errors.New("stream reset by tunnel")
+					return responseMetrics{}, errors.New("stream reset by tunnel")
 				}
 				if rst.Reason == "" {
 					rst.Reason = "stream reset by tunnel"
 				}
-				return errors.New(rst.Reason)
+				return responseMetrics{}, errors.New(rst.Reason)
 			}
 		}
 	}

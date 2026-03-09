@@ -12,6 +12,8 @@ type Config struct {
 	ControlPlaneURL    string
 	ControlPlaneSecret string
 	OverlayDir         string
+	OverlayEventSalt   string
+	OverlayDebugRaw    bool
 	MaxBodySize        int64
 	RateLimitRPS       float64
 	LogLevel           string
@@ -32,6 +34,10 @@ func LoadConfig() (Config, error) {
 	if err != nil {
 		return Config{}, err
 	}
+	overlayDebugRaw, err := parseBoolEnv("OVERLAY_DEBUG_RAW", false)
+	if err != nil {
+		return Config{}, err
+	}
 
 	cfg := Config{
 		Port:               port,
@@ -39,6 +45,8 @@ func LoadConfig() (Config, error) {
 		ControlPlaneURL:    getEnv("CONTROL_PLANE_URL", "http://localhost:4000"),
 		ControlPlaneSecret: os.Getenv("CONTROL_PLANE_SECRET"),
 		OverlayDir:         getEnv("OVERLAY_DIR", "../packages/overlay/dist"),
+		OverlayEventSalt:   getEnv("OVERLAY_EVENT_SALT", "stoat-overlay"),
+		OverlayDebugRaw:    overlayDebugRaw,
 		MaxBodySize:        maxBodySize,
 		RateLimitRPS:       rateLimitRPS,
 		LogLevel:           getEnv("LOG_LEVEL", "info"),
@@ -86,6 +94,18 @@ func parseFloatEnv(key string, fallback float64) (float64, error) {
 	v, err := strconv.ParseFloat(raw, 64)
 	if err != nil {
 		return 0, fmt.Errorf("%s must be a number: %w", key, err)
+	}
+	return v, nil
+}
+
+func parseBoolEnv(key string, fallback bool) (bool, error) {
+	raw := os.Getenv(key)
+	if raw == "" {
+		return fallback, nil
+	}
+	v, err := strconv.ParseBool(raw)
+	if err != nil {
+		return false, fmt.Errorf("%s must be true/false: %w", key, err)
 	}
 	return v, nil
 }
